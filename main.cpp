@@ -19,32 +19,51 @@
 #include <QTextCodec>
 #include <QtPlugin>
 #include <QDebug>
+#include <QDesktopWidget>
 using namespace std;
-Q_IMPORT_PLUGIN(qwslinuxinputkbddriver);
+#define Q_OS_DARWIN
+//Q_IMPORT_PLUGIN(qwslinuxinputkbddriver);
 int main(int argc, char **argv)
 {
     
     QApplication app(argc, argv);
+    qtxtReader *reader = new qtxtReader;
+    //QGridLayout *gl = new QGridLayout(dialog);
+    //gl->addWidget(rte,0,0,1,1);
+    QDesktopWidget desktop;
+    QRect rec = desktop.geometry();
+    int height = rec.height();
+    int width = rec.width();
 
-    QDialog *dialog = new QDialog(0);
-    qtxtReader *rte = new qtxtReader(dialog);
-    QGridLayout *gl = new QGridLayout(dialog);
-    gl->addWidget(rte,0,0,1,1);
-    dialog->setWindowTitle(QObject::tr("Rich text editor"));
-    dialog->setMinimumWidth (320);
-    dialog->setMinimumHeight(240);
-    dialog->setFixedSize(320,240);
-    dialog->show();
+    reader->setWindowTitle(QObject::tr("rs97 text reader"));
+    reader->setMinimumWidth (width);
+    reader->setMinimumHeight(height);
+    reader->setFixedSize(width,height);
+
+
+    reader->show();
 
     if(argc>1) {
-        QString filename = QString::fromUtf8(argv[1]);
-        QTextCodec *codec = QTextCodec::codecForName("utf-8");
-        QFile file(filename);
-        file.open(QIODevice::ReadOnly);
-        QByteArray arr = file.readLine();
-        QString str = codec->toUnicode(arr);
-        qDebug( "open file : %s", qPrintable(filename));
-        rte->setText(str);
+        QString fileName = QString::fromUtf8(argv[1]);
+        //QTextCodec *codec = QTextCodec::codecForName("utf-8");
+        QFile file(argv[1]);
+        const wchar_t * encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
+        if(file.open(QIODevice::ReadOnly))
+        {
+            reader->fileName = argv[1];
+            reader->setWindowTitle(fileName);
+            QTextStream stream(&file);
+            stream.setCodec("UTF-8");
+            
+            QString str = stream.readAll();
+            
+            qDebug( "open file : %ls", encodedName);
+            reader->setText(str);
+        }
+        else {
+            QString str = QString("open file fail:%1 \n %2").arg(fileName, file.errorString());
+            reader->setText(str);
+        }
     }
 
     return app.exec();

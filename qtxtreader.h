@@ -33,6 +33,7 @@
 class qtxtReader : public QWidget, protected Ui::qtxtReader {
     Q_OBJECT
   public:
+    char* fileName;
     qtxtReader(QWidget *parent = 0);
 
     QString toPlainText() const { return f_textedit->toPlainText(); }
@@ -47,8 +48,8 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
   protected slots:
     void setPlainText(const QString &text) { f_textedit->setPlainText(text); }
     void setHtml(const QString &text)      { f_textedit->setHtml(text); }
-    void textRemoveFormat();
-    void textRemoveAllFormat();
+    void reloadByUtf8();
+    void reloadByGBK();
     void textBold();
     void textUnderline();
     void textStrikeout();

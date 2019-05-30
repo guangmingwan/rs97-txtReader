@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = qtxtReader
+TARGET = bin/qtxtReader
 DEPENDPATH += .
 INCLUDEPATH += .
 
@@ -14,6 +14,6 @@ HEADERS += qtxtreader.h mtextedit.h
 FORMS += qtxtreader.ui
 SOURCES += qtxtreader.cpp mtextedit.cpp main.cpp
 
-QTPLUGIN += qlinuxinputkbddriver
-
-LIBS += -L/opt/buildroot-2018.02.11/output/build/qt-4.8.7/plugins/kbddrivers/ -lqlinuxinputkbddriver
+#QTPLUGIN += qlinuxinputkbddriver
+#LIBS += -L/opt/buildroot-2018.02.11/output/build/qt-4.8.7/plugins/kbddrivers/ -lqlinuxinputkbddriver
+QMAKE_LFLAGS += -Wl,-O1 -Wl,-rpath='\$ORIGIN/../lib'

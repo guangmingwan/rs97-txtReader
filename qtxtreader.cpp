@@ -65,42 +65,14 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
                         << tr("Heading 3")
                         << tr("Heading 4")
                         << tr("Monospace");
-    f_paragraph->addItems(m_paragraphItems);
 
-    connect(f_paragraph, SIGNAL(activated(int)),
-            this, SLOT(textStyle(int)));
 
     // undo & redo
 
-    f_undo->setShortcut(QKeySequence::Undo);
-    f_redo->setShortcut(QKeySequence::Redo);
-
-    connect(f_textedit->document(), SIGNAL(undoAvailable(bool)),
-            f_undo, SLOT(setEnabled(bool)));
-    connect(f_textedit->document(), SIGNAL(redoAvailable(bool)),
-            f_redo, SLOT(setEnabled(bool)));
-
-    f_undo->setEnabled(f_textedit->document()->isUndoAvailable());
-    f_redo->setEnabled(f_textedit->document()->isRedoAvailable());
-
-    connect(f_undo, SIGNAL(clicked()), f_textedit, SLOT(undo()));
-    connect(f_redo, SIGNAL(clicked()), f_textedit, SLOT(redo()));
-
+   
     // cut, copy & paste
 
-    f_cut->setShortcut(QKeySequence::Cut);
-    f_copy->setShortcut(QKeySequence::Copy);
-    f_paste->setShortcut(QKeySequence::Paste);
 
-    f_cut->setEnabled(false);
-    f_copy->setEnabled(false);
-
-    connect(f_cut, SIGNAL(clicked()), f_textedit, SLOT(cut()));
-    connect(f_copy, SIGNAL(clicked()), f_textedit, SLOT(copy()));
-    connect(f_paste, SIGNAL(clicked()), f_textedit, SLOT(paste()));
-
-    connect(f_textedit, SIGNAL(copyAvailable(bool)), f_cut, SLOT(setEnabled(bool)));
-    connect(f_textedit, SIGNAL(copyAvailable(bool)), f_copy, SLOT(setEnabled(bool)));
 
 #ifndef QT_NO_CLIPBOARD
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(slotClipboardDataChanged()));
@@ -114,25 +86,19 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
 
     // bold, italic & underline
 
-    f_bold->setShortcut(Qt::CTRL + Qt::Key_B);
-    f_italic->setShortcut(Qt::CTRL + Qt::Key_I);
-    f_underline->setShortcut(Qt::CTRL + Qt::Key_U);
+   
+   
 
-    connect(f_bold, SIGNAL(clicked()), this, SLOT(textBold()));
-    connect(f_italic, SIGNAL(clicked()), this, SLOT(textItalic()));
-    connect(f_underline, SIGNAL(clicked()), this, SLOT(textUnderline()));
-    connect(f_strikeout, SIGNAL(clicked()), this, SLOT(textStrikeout()));
-
-    QAction *removeFormat = new QAction(tr("Remove character formatting"), this);
+    QAction *removeFormat = new QAction(tr("reload by UTF8 "), this);
     removeFormat->setShortcut(QKeySequence("CTRL+M"));
-    connect(removeFormat, SIGNAL(triggered()), this, SLOT(textRemoveFormat()));
+    connect(removeFormat, SIGNAL(triggered()), this, SLOT(reloadByUtf8()));
     f_textedit->addAction(removeFormat);
 
-    QAction *removeAllFormat = new QAction(tr("Remove all formatting"), this);
-    connect(removeAllFormat, SIGNAL(triggered()), this, SLOT(textRemoveAllFormat()));
+    QAction *removeAllFormat = new QAction(tr("reload by GBK "), this);
+    connect(removeAllFormat, SIGNAL(triggered()), this, SLOT(reloadByGBK()));
     f_textedit->addAction(removeAllFormat);
 
-    QAction *textsource = new QAction(tr("Edit document source"), this);
+    QAction *textsource = new QAction(tr("Quit"), this);
     textsource->setShortcut(QKeySequence("CTRL+O"));
     connect(textsource, SIGNAL(triggered()), this, SLOT(textSource()));
     f_textedit->addAction(textsource);
@@ -156,12 +122,8 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
 
     // indentation
 
-    f_indent_dec->setShortcut(Qt::CTRL + Qt::Key_Comma);
-    f_indent_inc->setShortcut(Qt::CTRL + Qt::Key_Period);
 
-    connect(f_indent_inc, SIGNAL(clicked()), this, SLOT(increaseIndentation()));
-    connect(f_indent_dec, SIGNAL(clicked()), this, SLOT(decreaseIndentation()));
-
+  
     // font size
 
     QFontDatabase db;
@@ -189,11 +151,13 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
     connect(f_bgcolor, SIGNAL(clicked()), this, SLOT(textBgColor()));
 
     // images
-    connect(f_image, SIGNAL(clicked()), this, SLOT(insertImage()));
+   
 }
 
 
 void qtxtReader::textSource() {
+    QApplication::quit();
+    /*
     QDialog *dialog = new QDialog(this);
     QPlainTextEdit *pte = new QPlainTextEdit(dialog);
     pte->setPlainText( f_textedit->toHtml() );
@@ -207,49 +171,62 @@ void qtxtReader::textSource() {
     f_textedit->setHtml(pte->toPlainText());
 
     delete dialog;
+    */
 }
 
 
-void qtxtReader::textRemoveFormat() {
-    QTextCharFormat fmt;
-    fmt.setFontWeight(QFont::Normal);
-    fmt.setFontUnderline  (false);
-    fmt.setFontStrikeOut  (false);
-    fmt.setFontItalic     (false);
-    fmt.setFontPointSize  (9);
-//  fmt.setFontFamily     ("Helvetica");
-//  fmt.setFontStyleHint  (QFont::SansSerif);
-//  fmt.setFontFixedPitch (true);
-
-    f_bold      ->setChecked(false);
-    f_underline ->setChecked(false);
-    f_italic    ->setChecked(false);
-    f_strikeout ->setChecked(false);
-    f_fontsize  ->setCurrentIndex(f_fontsize->findText("9"));
-
-//  QTextBlockFormat bfmt = cursor.blockFormat();
-//  bfmt->setIndent(0);
-
-    fmt.clearBackground();
-
-    mergeFormatOnWordOrSelection(fmt);
+void qtxtReader::reloadByUtf8() {
+    QString fileName = QString::fromUtf8(this->fileName);
+    //QTextCodec *codec = QTextCodec::codecForName("utf-8");
+    QFile file(this->fileName);
+    const wchar_t * encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
+    if(file.open(QIODevice::ReadOnly))
+    {
+        //reader->fileName = this->fileName;
+        this->setWindowTitle(fileName);
+        QTextStream stream(&file);
+        stream.setCodec("UTF-8");
+        
+        QString str = stream.readAll();
+        
+        qDebug( "open file : %ls", encodedName);
+        this->setText(str);
+    }
+    else {
+        QString str = QString("open file fail:%1 \n %2").arg(fileName, file.errorString());
+        this->setText(str);
+    }
 }
 
 
-void qtxtReader::textRemoveAllFormat() {
-    f_bold      ->setChecked(false);
-    f_underline ->setChecked(false);
-    f_italic    ->setChecked(false);
-    f_strikeout ->setChecked(false);
-    f_fontsize  ->setCurrentIndex(f_fontsize->findText("9"));
-    QString text = f_textedit->toPlainText();
-    f_textedit->setPlainText(text);
+void qtxtReader::reloadByGBK() {
+   
+    QString fileName = QString::fromUtf8(this->fileName);
+        //QTextCodec *codec = QTextCodec::codecForName("utf-8");
+        QFile file(this->fileName);
+        const wchar_t * encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
+        if(file.open(QIODevice::ReadOnly))
+        {
+            //reader->fileName = this->fileName;
+            this->setWindowTitle(fileName);
+            QTextStream stream(&file);
+            stream.setCodec("GBK");
+            
+            QString str = stream.readAll();
+            
+            qDebug( "open file : %ls", encodedName);
+            this->setText(str);
+        }
+        else {
+            QString str = QString("open file fail:%1 \n %2").arg(fileName, file.errorString());
+            this->setText(str);
+        }
 }
 
 
 void qtxtReader::textBold() {
     QTextCharFormat fmt;
-    fmt.setFontWeight(f_bold->isChecked() ? QFont::Bold : QFont::Normal);
+    //fmt.setFontWeight(f_bold->isChecked() ? QFont::Bold : QFont::Normal);
     mergeFormatOnWordOrSelection(fmt);
 }
 
@@ -261,19 +238,18 @@ void qtxtReader::focusInEvent(QFocusEvent *) {
 
 void qtxtReader::textUnderline() {
     QTextCharFormat fmt;
-    fmt.setFontUnderline(f_underline->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
 
 void qtxtReader::textItalic() {
     QTextCharFormat fmt;
-    fmt.setFontItalic(f_italic->isChecked());
+   
     mergeFormatOnWordOrSelection(fmt);
 }
 
 void qtxtReader::textStrikeout() {
     QTextCharFormat fmt;
-    fmt.setFontStrikeOut(f_strikeout->isChecked());
+    
     mergeFormatOnWordOrSelection(fmt);
 }
 
@@ -465,25 +441,8 @@ void qtxtReader::slotCursorPositionChanged() {
 
 void qtxtReader::fontChanged(const QFont &f) {
     f_fontsize->setCurrentIndex(f_fontsize->findText(QString::number(f.pointSize())));
-    f_bold->setChecked(f.bold());
-    f_italic->setChecked(f.italic());
-    f_underline->setChecked(f.underline());
-    f_strikeout->setChecked(f.strikeOut());
-    if (f.pointSize() == m_fontsize_h1) {
-        f_paragraph->setCurrentIndex(ParagraphHeading1);
-      } else if (f.pointSize() == m_fontsize_h2) {
-        f_paragraph->setCurrentIndex(ParagraphHeading2);
-      } else if (f.pointSize() == m_fontsize_h3) {
-        f_paragraph->setCurrentIndex(ParagraphHeading3);
-      } else if (f.pointSize() == m_fontsize_h4) {
-        f_paragraph->setCurrentIndex(ParagraphHeading4);
-      } else {
-        if (f.fixedPitch() && f.family() == "Monospace") {
-            f_paragraph->setCurrentIndex(ParagraphMonospace);
-          } else {
-            f_paragraph->setCurrentIndex(ParagraphStandard);
-            }
-        }
+  
+  
     if (f_textedit->textCursor().currentList()) {
         QTextListFormat lfmt = f_textedit->textCursor().currentList()->format();
         if (lfmt.style() == QTextListFormat::ListDisc) {
@@ -531,8 +490,8 @@ void qtxtReader::slotCurrentCharFormatChanged(const QTextCharFormat &format) {
 
 void qtxtReader::slotClipboardDataChanged() {
 #ifndef QT_NO_CLIPBOARD
-    if (const QMimeData *md = QApplication::clipboard()->mimeData())
-        f_paste->setEnabled(md->hasText());
+    //if (const QMimeData *md = QApplication::clipboard()->mimeData())
+        
 #endif
 }
 
