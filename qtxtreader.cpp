@@ -107,6 +107,8 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     f_menu->setMenu(menu);
     f_menu->setPopupMode(QToolButton::InstantPopup);
     f_menu->setShortcut(QKeySequence(Qt::Key_Escape));
+
+    f_toolbar->setWindowOpacity(0.5);
     // lists
 
     // indentation
@@ -140,53 +142,19 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     // images
 }
 
-// void qtxtReader::keyPressEvent(QKeyEvent *k)
-// {
-//     if (k->key() == Qt::Key_Tab)
-//     {
-//         QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_PageUp, Qt::NoModifier, QString());
-//         QCoreApplication::sendEvent(this, &keyPress);
-//     }
-//     else if (k->key() == Qt::Key_Enter|| k->key() == Qt::Key_Return)
-//     {
-//         qDebug("qtxtReader::keyPressEvent: key:%d", k->key());
-//         QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_PageDown, Qt::NoModifier, QString());
-//         QCoreApplication::sendEvent(this, &keyPress);
-//     }
-    
-// }
-// bool qtxtReader::event(QEvent *event)
-// {
-//     if (event->type() == QEvent::KeyPress)
-//     {
-        
-//         QKeyEvent *ke = static_cast<QKeyEvent*>(event);
-//         qDebug("qtxtReader::event : key:%d", ke->key());
-//         if (ke->key() == Qt::Key_Tab)
-//         {
-//             // special tab handling here
-//             return true;
-//         }
-//         else if (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return)
-//         {
-//             // special tab handling here
-//             return true;
-//         }
-//     }
-//     return QWidget::event(event);
-// }
+
 bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type()==QEvent::KeyPress) {
         QKeyEvent* key = static_cast<QKeyEvent*>(event);
         qDebug("qtxtReader::eventFilter : key:0x%04x", key->key());
-        if( key->key()==Qt::Key_Tab) {
+        if( key->key()==Qt::Key_Tab || key->key()==Qt::Key_Left) {
             //QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_PageUp, Qt::NoModifier, QString());
             QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_PageUp,Qt::NoModifier,QString());
             QCoreApplication::postEvent((QObject*)f_textedit, eve1);
             qDebug("send key:0x%04x", eve1->key());
         }
-        else if ( (key->key()==Qt::Key_Enter) || (key->key()==Qt::Key_Return) ) {
+        else if ( key->key()==Qt::Key_Backspace || key->key()==Qt::Key_Right ) {
             QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_PageDown,Qt::NoModifier,QString());
 
             QCoreApplication::postEvent((QObject*)f_textedit, eve1);
@@ -645,12 +613,12 @@ void qtxtReader::setCode(const QString &text)
 {
     if (text.isEmpty())
     {
-        f_link->setText(tr("未识别出来的编码，使用默认utf8"));
+        f_link->setText(QString::fromUtf8("未识别，使用默认utf8"));
         return;
     }
     else
     {
-        f_link->setText(tr("编码：") + text);
+        f_link->setText(QString::fromUtf8("编码：") + text);
     }
 }
 
