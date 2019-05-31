@@ -645,12 +645,12 @@ void qtxtReader::setCode(const QString &text)
 {
     if (text.isEmpty())
     {
-        f_link->setText("未识别出来的编码，使用默认utf8");
+        f_link->setText(tr("未识别出来的编码，使用默认utf8"));
         return;
     }
     else
     {
-        f_link->setText("编码：" + text);
+        f_link->setText(tr("编码：") + text);
     }
 }
 
