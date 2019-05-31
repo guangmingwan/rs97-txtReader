@@ -80,9 +80,7 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
 
     // link
 
-    f_link->setShortcut(Qt::CTRL + Qt::Key_L);
-
-    connect(f_link, SIGNAL(clicked(bool)), this, SLOT(textLink(bool)));
+    
 
     // bold, italic & underline
 
@@ -114,12 +112,7 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) {
 
     // lists
 
-    f_list_bullet->setShortcut(Qt::CTRL + Qt::Key_Minus);
-    f_list_ordered->setShortcut(Qt::CTRL + Qt::Key_Equal);
-
-    connect(f_list_bullet, SIGNAL(clicked(bool)), this, SLOT(listBullet(bool)));
-    connect(f_list_ordered, SIGNAL(clicked(bool)), this, SLOT(listOrdered(bool)));
-
+   
     // indentation
 
 
@@ -373,14 +366,14 @@ void qtxtReader::textBgColor() {
 
 void qtxtReader::listBullet(bool checked) {
     if (checked) {
-        f_list_ordered->setChecked(false);
+        
         }
     list(checked, QTextListFormat::ListDisc);
 }
 
 void qtxtReader::listOrdered(bool checked) {
     if (checked) {
-        f_list_bullet->setChecked(false);
+        
         }
     list(checked, QTextListFormat::ListDecimal);
 }
@@ -424,18 +417,17 @@ void qtxtReader::slotCursorPositionChanged() {
     if (l) {
         QTextListFormat lfmt = l->format();
         if (lfmt.style() == QTextListFormat::ListDisc) {
-            f_list_bullet->setChecked(true);
-            f_list_ordered->setChecked(false);
+            
+            
           } else if (lfmt.style() == QTextListFormat::ListDecimal) {
-            f_list_bullet->setChecked(false);
-            f_list_ordered->setChecked(true);
+            
           } else {
-            f_list_bullet->setChecked(false);
-            f_list_ordered->setChecked(false);
+            
+            
             }
       } else {
-        f_list_bullet->setChecked(false);
-        f_list_ordered->setChecked(false);
+        
+        
         }
 }
 
@@ -446,18 +438,17 @@ void qtxtReader::fontChanged(const QFont &f) {
     if (f_textedit->textCursor().currentList()) {
         QTextListFormat lfmt = f_textedit->textCursor().currentList()->format();
         if (lfmt.style() == QTextListFormat::ListDisc) {
-            f_list_bullet->setChecked(true);
-            f_list_ordered->setChecked(false);
+            
+            
           } else if (lfmt.style() == QTextListFormat::ListDecimal) {
-            f_list_bullet->setChecked(false);
-            f_list_ordered->setChecked(true);
+            
           } else {
-            f_list_bullet->setChecked(false);
-            f_list_ordered->setChecked(false);
+            
+            
             }
       } else {
-        f_list_bullet->setChecked(false);
-        f_list_ordered->setChecked(false);
+        
+        
       }
 }
 
@@ -485,7 +476,7 @@ void qtxtReader::slotCurrentCharFormatChanged(const QTextCharFormat &format) {
     fontChanged(format.font());
     bgColorChanged((format.background().isOpaque()) ? format.background().color() : QColor());
     fgColorChanged((format.foreground().isOpaque()) ? format.foreground().color() : QColor());
-    f_link->setChecked(format.isAnchor());
+    //f_link->setChecked(format.isAnchor());
 }
 
 void qtxtReader::slotClipboardDataChanged() {
@@ -535,6 +526,15 @@ void qtxtReader::setText(const QString& text) {
       } else {
         setPlainText(text);
         }
+}
+void qtxtReader::setCode(const QString& text) {
+    if (text.isEmpty()) {
+        f_link->setText("未识别出来的编码，使用默认utf8");
+        return;
+        }
+    else {
+        f_link->setText("编码："+text);
+    }
 }
 
 void qtxtReader::insertImage() {

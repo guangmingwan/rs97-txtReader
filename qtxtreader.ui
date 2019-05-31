@@ -56,7 +56,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="f_link">
+       <widget class="QLabel" name="f_link">
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
         </property>
@@ -66,20 +66,7 @@
         <property name="text">
          <string>Link</string>
         </property>
-        <property name="icon">
-         <iconset theme="applications-internet">
-          <normaloff/>
-         </iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
+        
        </widget>
       </item>
       <item>
@@ -90,89 +77,7 @@
        </widget>
       </item>
       
-      <item>
-       <widget class="Line" name="line_5">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="f_list_bullet">
-        <property name="focusPolicy">
-         <enum>Qt::ClickFocus</enum>
-        </property>
-        <property name="toolTip">
-         <string>Bullet list (CTRL+-)</string>
-        </property>
-        <property name="text">
-         <string>Bullet list</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="f_list_ordered">
-        <property name="focusPolicy">
-         <enum>Qt::ClickFocus</enum>
-        </property>
-        <property name="toolTip">
-         <string>Ordered list (CTRL+=)</string>
-        </property>
-        <property name="text">
-         <string>Ordered list</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="f_indent_dec">
-        <property name="focusPolicy">
-         <enum>Qt::ClickFocus</enum>
-        </property>
-        <property name="toolTip">
-         <string>Decrease indentation (CTRL+,)</string>
-        </property>
-        <property name="text">
-         <string>Decrease indentation</string>
-        </property>
-        <property name="icon">
-         <iconset theme="format-indent-less">
-          <normaloff/>
-         </iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      
-      <item>
-       <widget class="Line" name="line_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
+     
       <item>
        <widget class="QToolButton" name="f_fgcolor">
         <property name="minimumSize">
@@ -272,7 +177,7 @@
       <item>
        <widget class="QToolButton" name="f_menu">
         <property name="text">
-         <string>...</string>
+         <string>菜单</string>
         </property>
        </widget>
       </item>
@@ -286,8 +191,6 @@
      <zorder>line_2</zorder>
      <zorder>f_fontsize</zorder>
      <zorder>line_5</zorder>
-     <zorder>f_list_bullet</zorder>
-     <zorder>f_list_ordered</zorder>
      <zorder>f_indent_dec</zorder>
     
      
@@ -304,6 +207,9 @@
       <set>QTextEdit::AutoNone</set>
      </property>
      <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+     <property name="ReadOnly">
       <bool>true</bool>
      </property>
     </widget>

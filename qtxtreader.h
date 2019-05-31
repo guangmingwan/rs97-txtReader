@@ -44,7 +44,7 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
 
   public slots:
     void setText(const QString &text);
-
+    void setCode(const QString &code);
   protected slots:
     void setPlainText(const QString &text) { f_textedit->setPlainText(text); }
     void setHtml(const QString &text)      { f_textedit->setHtml(text); }

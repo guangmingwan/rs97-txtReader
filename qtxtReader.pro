@@ -10,10 +10,24 @@ INCLUDEPATH += .
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # Input
-HEADERS += qtxtreader.h mtextedit.h
+HEADERS += qtxtreader.h mtextedit.h \
+            3rd/libcharsetdetect/charsetdetect.h
 FORMS += qtxtreader.ui
-SOURCES += qtxtreader.cpp mtextedit.cpp main.cpp
+SOURCES += qtxtreader.cpp mtextedit.cpp main.cpp \
+            3rd/libcharsetdetect/charsetdetect.cpp \
+            $$files(3rd/libcharsetdetect/mozilla/extensions/universalchardet/src/base/*.cpp, true)
+            
 
 #QTPLUGIN += qlinuxinputkbddriver
 #LIBS += -L/opt/buildroot-2018.02.11/output/build/qt-4.8.7/plugins/kbddrivers/ -lqlinuxinputkbddriver
-QMAKE_LFLAGS += -Wl,-O1 -Wl,-rpath='\$ORIGIN/../lib'
+unix:!macx {
+    QMAKE_LFLAGS += -Wl,-O1 -Wl,-rpath='\$ORIGIN/../lib'
+}
+
+macx: {
+    
+}
+
+INCLUDEPATH += 3rd/libcharsetdetect/ \
+               3rd/libcharsetdetect/nspr-emu/ \
+               3rd/libcharsetdetect/mozilla/extensions/universalchardet/src/base/

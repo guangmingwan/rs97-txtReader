@@ -20,9 +20,46 @@
 #include <QtPlugin>
 #include <QDebug>
 #include <QDesktopWidget>
+#include "charsetdetect.h"
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <wchar.h>
 using namespace std;
 #define Q_OS_DARWIN
 //Q_IMPORT_PLUGIN(qwslinuxinputkbddriver);
+#define BUFFER_SIZE 4096
+const char* detect_charset(const char* fileName) {
+    FILE *fd = fopen(fileName,"r");
+    csd_t csd = csd_open();
+    if (csd == (csd_t)-1) {
+        qDebug( "csd_open failed: %s", fileName);
+        return NULL;
+    }
+
+    int size;
+    char buf[BUFFER_SIZE] = {0};
+
+    while ((size = fread(buf, 1, sizeof(buf), fd)) != 0) {
+        int result = csd_consider(csd, buf, size);
+        if (result < 0) {
+            qDebug( "csd_consider failed");
+            return NULL;
+        } else if (result > 0) {
+            // Already have enough data
+            break;
+        }
+    }
+
+    const char *result = csd_close(csd);
+    if (result == NULL) {
+        qDebug( "Unknown character set");
+        return NULL;
+    } else {
+        qDebug( "%s", result);
+        return result;
+    }
+}
 int main(int argc, char **argv)
 {
     
@@ -47,14 +84,15 @@ int main(int argc, char **argv)
         QString fileName = QString::fromUtf8(argv[1]);
         //QTextCodec *codec = QTextCodec::codecForName("utf-8");
         QFile file(argv[1]);
+        const char* code = detect_charset(argv[1]);
         const wchar_t * encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
         if(file.open(QIODevice::ReadOnly))
         {
             reader->fileName = argv[1];
             reader->setWindowTitle(fileName);
             QTextStream stream(&file);
-            stream.setCodec("UTF-8");
-            
+            stream.setCodec(code);
+            reader->setCode(code);
             QString str = stream.readAll();
             
             qDebug( "open file : %ls", encodedName);
