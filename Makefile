@@ -798,14 +798,7 @@ compiler_moc_header_clean:
 	-$(DEL_FILE) moc_qtxtreader.cpp moc_mtextedit.cpp
 moc_qtxtreader.cpp: /usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QPointer \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qpointer.h \
-		ui_qtxtReader.h \
-		mtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QTextEdit \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QMimeData \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qmimedata.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/QImage \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/qimage.h \
+		ui_qtxtreader.h \
 		qtxtreader.h \
 		moc_predefs.h \
 		/usr/local/Cellar/qt/5.11.0/bin/moc
@@ -852,21 +845,16 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean compiler_ui
 
 ####### Compile
 
-qtxtreader.o: qtxtreader.cpp qtxtReader.h \
+qtxtreader.o: qtxtreader.cpp qtxtreader.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QPointer \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qpointer.h \
-		ui_qtxtReader.h \
-		mtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QTextEdit \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QMimeData \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qmimedata.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/QImage \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/qimage.h \
+		ui_qtxtreader.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QApplication \
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qapplication.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/QClipboard \
 		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/qclipboard.h \
+		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QMimeData \
+		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qmimedata.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/QFontDatabase \
 		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/qfontdatabase.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QInputDialog \
@@ -916,17 +904,10 @@ main.o: main.cpp /usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QAp
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qapplication.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QDialog \
 		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qdialog.h \
-		qtxtReader.h \
+		qtxtreader.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QPointer \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qpointer.h \
-		ui_qtxtReader.h \
-		mtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/QTextEdit \
-		/usr/local/Cellar/qt/5.11.0/lib/QtWidgets.framework/Headers/qtextedit.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QMimeData \
-		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qmimedata.h \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/QImage \
-		/usr/local/Cellar/qt/5.11.0/lib/QtGui.framework/Headers/qimage.h \
+		ui_qtxtreader.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QFile \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/qfile.h \
 		/usr/local/Cellar/qt/5.11.0/lib/QtCore.framework/Headers/QTextCodec \

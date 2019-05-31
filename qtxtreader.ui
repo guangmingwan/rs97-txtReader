@@ -140,19 +140,7 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QComboBox" name="f_fontsize">
-        <property name="focusPolicy">
-         <enum>Qt::ClickFocus</enum>
-        </property>
-        <property name="toolTip">
-         <string>Font size</string>
-        </property>
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
+      
       <item>
        <widget class="Line" name="line_6">
         <property name="orientation">
@@ -188,8 +176,7 @@
      <zorder>line</zorder>
      <zorder>f_link</zorder>
     
-     <zorder>line_2</zorder>
-     <zorder>f_fontsize</zorder>
+     <zorder>line_2</zorder> 
      <zorder>line_5</zorder>
      <zorder>f_indent_dec</zorder>
     

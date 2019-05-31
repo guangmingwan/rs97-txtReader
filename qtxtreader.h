@@ -25,7 +25,7 @@
 #define _qtxtReader_H_
 
 #include <QPointer>
-#include "ui_qtxtReader.h"
+#include "ui_qtxtreader.h"
 
 /**
  * @Brief A simple rich-text editor
@@ -70,6 +70,9 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
     void textSource();
 
   protected:
+    //void keyPressEvent( QKeyEvent *k );
+    //bool event(QEvent *event);
+    bool eventFilter(QObject* obj, QEvent* event);
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
     void fgColorChanged(const QColor &c);
