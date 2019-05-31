@@ -13,7 +13,7 @@
 #include <QDialog>
 #endif
 
-#include "qtxtReader.h"
+#include "qtxtreader.h"
 #include <iostream>
 #include <QFile>
 #include <QTextCodec>
