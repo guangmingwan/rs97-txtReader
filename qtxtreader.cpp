@@ -107,6 +107,7 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     f_menu->setMenu(menu);
     f_menu->setPopupMode(QToolButton::InstantPopup);
     f_menu->setShortcut(QKeySequence(Qt::Key_Escape));
+    f_menu->setFocusPolicy(Qt::NoFocus);
 
     f_toolbar->setWindowOpacity(0.5);
     // lists
