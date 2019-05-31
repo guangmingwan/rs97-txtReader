@@ -56,15 +56,13 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="f_link">
+       <widget class="QLabel" name="l_encode_name">
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
         </property>
-        <property name="toolTip">
-         <string>Link (CTRL+L)</string>
-        </property>
+        
         <property name="text">
-         <string>Link</string>
+         <string>encode_name</string>
         </property>
         
        </widget>
@@ -79,33 +77,13 @@
       
      
       <item>
-       <widget class="QToolButton" name="f_fgcolor">
-        <property name="minimumSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
+       <widget class="QLabel" name="l_word_count">
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
         </property>
-        <property name="toolTip">
-         <string>Text foreground color</string>
-        </property>
+       
         <property name="text">
-         <string>.</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
+         <string>word_count</string>
         </property>
        </widget>
       </item>
@@ -165,7 +143,7 @@
       <item>
        <widget class="QToolButton" name="f_menu">
         <property name="text">
-         <string>菜单</string>
+         <string>菜单[SELECT]</string>
         </property>
        </widget>
       </item>
@@ -174,7 +152,7 @@
      <zorder>f_redo</zorder>
     
      <zorder>line</zorder>
-     <zorder>f_link</zorder>
+     <zorder>l_encode_name</zorder>
     
      <zorder>line_2</zorder> 
      <zorder>line_5</zorder>
@@ -185,7 +163,7 @@
     
      <zorder>line_6</zorder>
      <zorder>f_menu</zorder>
-     <zorder>f_fgcolor</zorder>
+     <zorder>l_word_count</zorder>
     </widget>
    </item>
    <item>

@@ -38,6 +38,8 @@
 #include <QPlainTextEdit>
 #include <QMenu>
 #include <QDialog>
+#include <stdlib.h>
+#include <math.h>
 
 qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 {
@@ -84,16 +86,16 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 
     // bold, italic & underline
 
-    QAction *removeFormat = new QAction(tr("reload by UTF8 "), this);
+    QAction *removeFormat = new QAction(tr("强制使用UTF8编码 "), this);
     //removeFormat->setShortcut(QKeySequence("CTRL+M"));
     connect(removeFormat, SIGNAL(triggered()), this, SLOT(reloadByUtf8()));
     f_textedit->addAction(removeFormat);
 
-    QAction *removeAllFormat = new QAction(tr("reload by GBK "), this);
+    QAction *removeAllFormat = new QAction(tr("强制使用GBK编码"), this);
     connect(removeAllFormat, SIGNAL(triggered()), this, SLOT(reloadByGBK()));
     f_textedit->addAction(removeAllFormat);
 
-    QAction *textsource = new QAction(tr("Quit"), this);
+    QAction *textsource = new QAction(tr("退出[START]"), this);
     //textsource->setShortcut(QKeySequence("CTRL+O"));
     connect(textsource, SIGNAL(triggered()), this, SLOT(textSource()));
     f_textedit->addAction(textsource);
@@ -127,16 +129,16 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 
     // text foreground color
 
-    QPixmap pix(16, 16);
-    pix.fill(QApplication::palette().foreground().color());
-    f_fgcolor->setIcon(pix);
+    // QPixmap pix(16, 16);
+    // pix.fill(QApplication::palette().foreground().color());
+    // l_word_count->setIcon(pix);
 
-    connect(f_fgcolor, SIGNAL(clicked()), this, SLOT(textFgColor()));
+    // connect(l_word_count, SIGNAL(clicked()), this, SLOT(textFgColor()));
 
     // text background color
 
-    pix.fill(QApplication::palette().background().color());
-    f_bgcolor->setIcon(pix);
+    //pix.fill(QApplication::palette().background().color());
+    //f_bgcolor->setIcon(pix);
 
     connect(f_bgcolor, SIGNAL(clicked()), this, SLOT(textBgColor()));
 
@@ -527,7 +529,7 @@ void qtxtReader::fgColorChanged(const QColor &c)
     {
         pix.fill(QApplication::palette().foreground().color());
     }
-    f_fgcolor->setIcon(pix);
+    // l_word_count->setIcon(pix);
 }
 
 void qtxtReader::bgColorChanged(const QColor &c)
@@ -549,7 +551,7 @@ void qtxtReader::slotCurrentCharFormatChanged(const QTextCharFormat &format)
     fontChanged(format.font());
     bgColorChanged((format.background().isOpaque()) ? format.background().color() : QColor());
     fgColorChanged((format.foreground().isOpaque()) ? format.foreground().color() : QColor());
-    //f_link->setChecked(format.isAnchor());
+    //l_encode_name->setChecked(format.isAnchor());
 }
 
 void qtxtReader::slotClipboardDataChanged(){
@@ -593,7 +595,29 @@ void qtxtReader::indent(int delta)
     cursor.setBlockFormat(bfmt);
     cursor.endEditBlock();
 }
-
+// Prints to the provided buffer a nice number of bytes (KB, MB, GB, etc)
+void pretty_bytes(char* buf, uint bytes)
+{
+    const char* suffixes[7];
+    suffixes[0] = "字";//"B";
+    suffixes[1] = "千字";//"KB";
+    suffixes[2] = "百万字";//"MB";
+    suffixes[3] = "G字";
+    suffixes[4] = "T字";
+    suffixes[5] = "P字";
+    suffixes[6] = "E字";
+    uint s = 0; // which suffix to use
+    double count = bytes;
+    while (count >= 1024 && s < 7)
+    {
+        s++;
+        count /= 1024;
+    }
+    if (count - floor(count) == 0.0)
+        sprintf(buf, "%d %s", (int)count, suffixes[s]);
+    else
+        sprintf(buf, "%.1f %s", count, suffixes[s]);
+}
 void qtxtReader::setText(const QString &text)
 {
     if (text.isEmpty())
@@ -609,17 +633,21 @@ void qtxtReader::setText(const QString &text)
     {
         setPlainText(text);
     }
+    char cb[1024]="";
+    pretty_bytes(cb,text.length());
+    QString wc = QString::fromUtf8("字数：") + cb;
+    this->l_word_count->setText( wc );
 }
 void qtxtReader::setCode(const QString &text)
 {
     if (text.isEmpty())
     {
-        f_link->setText(QString::fromUtf8("未识别，使用默认utf8"));
+        l_encode_name->setText(QString::fromUtf8("未识别，使用默认utf8"));
         return;
     }
     else
     {
-        f_link->setText(QString::fromUtf8("编码：") + text);
+        l_encode_name->setText(QString::fromUtf8("编码：") + text);
     }
 }
 
