@@ -659,11 +659,11 @@ void pretty_bytes(char* buf, uint bytes)
     double count = bytes;
     if(bytes>1000) {
         s++;
-        count = bytes / 1000;
+        count = bytes / 1000.0;
     }
     if(bytes>10000) {
         s++;
-        count = bytes / 10000;
+        count = bytes / 10000.0;
     }
     
     if(s<=0)
