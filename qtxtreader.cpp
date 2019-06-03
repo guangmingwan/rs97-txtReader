@@ -176,7 +176,10 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 
     f_textedit->setFocus();
 
+    f_textedit->setFrameStyle(QFrame::NoFrame);
+
     QMenu *menu = new QMenu(this);
+    //menu->installEventFilter(this);
     menu->addAction(actFullscreen);
 
     QMenu *actReload = menu->addMenu(QString::fromUtf8("编码"));
@@ -218,7 +221,12 @@ bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
     if (event->type()==QEvent::KeyPress) {
         QKeyEvent* key = static_cast<QKeyEvent*>(event);
         //qDebug("qtxtReader::eventFilter : key:0x%04x", key->key());
-        if( key->key()==Qt::Key_Tab || key->key()==Qt::Key_Left) {
+        if( key->key() == Qt::Key_Space) {
+            QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier,QString());
+
+            QCoreApplication::postEvent((QObject*)this, eve1);
+        }
+        else if( key->key()==Qt::Key_Tab || key->key()==Qt::Key_Left) {
             //QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_PageUp, Qt::NoModifier, QString());
             QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_PageUp,Qt::NoModifier,QString());
             QCoreApplication::postEvent((QObject*)f_textedit, eve1);
