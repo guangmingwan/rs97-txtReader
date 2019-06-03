@@ -36,12 +36,24 @@
 #include <QBuffer>
 #include <QUrl>
 #include <QPlainTextEdit>
+#include <QString>
+#include <QFont>
 #include <QMenu>
 #include <QDialog>
 #include<QScrollBar>
 #include <stdlib.h>
 #include <math.h>
 
+QString qtxtReader::styleSheetFromFile(QString file, QString folderForUrl)
+{
+    qDebug("styleSheetFromFile %ls %ls", file.utf16(), folderForUrl.utf16());
+    QFile f(file);
+    f.open(QFile::ReadOnly);
+    QString styleSheet = QLatin1String(f.readAll());
+    f.close();
+    styleSheet.replace("url(","url("+folderForUrl+"/");
+    return styleSheet;
+}
 qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
@@ -58,9 +70,12 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     connect(f_textedit, SIGNAL(cursorPositionChanged()),
             this, SLOT(slotCursorPositionChanged()));
     f_textedit->installEventFilter(this);
-    f_textedit->verticalScrollBar()->setStyleSheet("QScrollBar:vertical"
+    
+    f_textedit->verticalScrollBar()->setStyleSheet(
+                                                   
+                                                   "QScrollBar:vertical"
                                                    "{"
-                                                   "width:8px;"
+                                                   "width:4px;"
                                                    "background:rgba(0,0,0,0%);"
                                                    "margin:0px,0px,0px,0px;"
                                                    "padding-top:9px;"
@@ -68,39 +83,39 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
                                                    "}"
                                                    "QScrollBar::handle:vertical"
                                                    "{"
-                                                   "width:8px;"
+                                                   "width:4px;"
                                                    "background:rgba(0,0,0,25%);"
                                                    " border-radius:4px;"
                                                    "min-height:20;"
                                                    "}"
                                                    "QScrollBar::handle:vertical:hover"
                                                    "{"
-                                                   "width:8px;"
+                                                   "width:4px;"
                                                    "background:rgba(0,0,0,50%);"
                                                    " border-radius:4px;"
                                                    "min-height:20;"
                                                    "}"
                                                    "QScrollBar::add-line:vertical"
                                                    "{"
-                                                   "height:9px;width:8px;"
+                                                   "height:9px;width:4px;"
                                                    "border-image:url(:/images/a/3.png);"
                                                    "subcontrol-position:bottom;"
                                                    "}"
                                                    "QScrollBar::sub-line:vertical"
                                                    "{"
-                                                   "height:9px;width:8px;"
+                                                   "height:9px;width:4px;"
                                                    "border-image:url(:/images/a/1.png);"
                                                    "subcontrol-position:top;"
                                                    "}"
                                                    "QScrollBar::add-line:vertical:hover"
                                                    "{"
-                                                   "height:9px;width:8px;"
+                                                   "height:9px;width:4px;"
                                                    "border-image:url(:/images/a/4.png);"
                                                    "subcontrol-position:bottom;"
                                                    "}"
                                                    "QScrollBar::sub-line:vertical:hover"
                                                    "{"
-                                                   "height:9px;width:8px;"
+                                                   "height:9px;width:4px;"
                                                    "border-image:url(:/images/a/2.png);"
                                                    "subcontrol-position:top;"
                                                    "}"
@@ -139,25 +154,53 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 
     // bold, italic & underline
 
-    QAction *removeFormat = new QAction(QString::fromUtf8("强制使用UTF8编码 "), this);
-    //removeFormat->setShortcut(QKeySequence("CTRL+M"));
-    connect(removeFormat, SIGNAL(triggered()), this, SLOT(reloadByUtf8()));
-    f_textedit->addAction(removeFormat);
+    QAction *actFullscreen = new QAction(QString::fromUtf8("全屏"), this);
+    //actReloadByUTF8->setShortcut(QKeySequence("CTRL+M"));
+    connect(actFullscreen, SIGNAL(triggered()), this, SLOT(fullscreen()));
+    f_textedit->addAction(actFullscreen);
+    
 
-    QAction *removeAllFormat = new QAction(QString::fromUtf8("强制使用GBK编码"), this);
-    connect(removeAllFormat, SIGNAL(triggered()), this, SLOT(reloadByGBK()));
-    f_textedit->addAction(removeAllFormat);
+    QAction *actReloadByUTF8 = new QAction(QString::fromUtf8("强制使用UTF8编码"), this);
+    //actReloadByUTF8->setShortcut(QKeySequence("CTRL+M"));
+    connect(actReloadByUTF8, SIGNAL(triggered()), this, SLOT(reloadByUtf8()));
+    f_textedit->addAction(actReloadByUTF8);
+
+    QAction *actReloadByGBK = new QAction(QString::fromUtf8("强制使用GBK编码"), this);
+    connect(actReloadByGBK, SIGNAL(triggered()), this, SLOT(reloadByGBK()));
+    f_textedit->addAction(actReloadByGBK);
 
     QAction *textsource = new QAction(QString::fromUtf8("退出[START]"), this);
     //textsource->setShortcut(QKeySequence("CTRL+O"));
-    connect(textsource, SIGNAL(triggered()), this, SLOT(textSource()));
+    connect(textsource, SIGNAL(triggered()), this, SLOT(slotQuit()));
     f_textedit->addAction(textsource);
 
     f_textedit->setFocus();
 
     QMenu *menu = new QMenu(this);
-    menu->addAction(removeAllFormat);
-    menu->addAction(removeFormat);
+    menu->addAction(actFullscreen);
+
+    QMenu *actReload = menu->addMenu(QString::fromUtf8("编码"));
+    
+    //menu->addAction(actReloadByGBK);
+    actReload->addAction(actReloadByGBK);
+    actReload->addAction(actReloadByUTF8);
+
+    QMenu *actFont = menu->addMenu(QString::fromUtf8("字体"));
+
+    QAction *actFontSmall = new QAction(QString::fromUtf8("小"), this);
+    connect(actFontSmall, SIGNAL(triggered()), this, SLOT(actFontSmall()));
+
+    QAction *actFontMedium = new QAction(QString::fromUtf8("中"), this);
+    connect(actFontMedium, SIGNAL(triggered()), this, SLOT(actFontMedium()));
+
+    QAction *actFontBig = new QAction(QString::fromUtf8("大"), this);
+    connect(actFontBig, SIGNAL(triggered()), this, SLOT(actFontBig()));
+
+    actFont->addAction(actFontSmall);
+    actFont->addAction(actFontMedium);
+    actFont->addAction(actFontBig);
+
+    //menu->addAction(actReload);
     menu->addAction(textsource);
     f_menu->setMenu(menu);
     f_menu->setPopupMode(QToolButton::InstantPopup);
@@ -165,37 +208,8 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     f_menu->setFocusPolicy(Qt::NoFocus);
 
     f_toolbar->setWindowOpacity(0.5);
-    // lists
-
-    // indentation
-
-    // font size
 
     QFontDatabase db;
-    // foreach (int size, db.standardSizes())
-    //     f_fontsize->addItem(QString::number(size));
-
-    // connect(f_fontsize, SIGNAL(activated(QString)),
-    //         this, SLOT(textSize(QString)));
-    // f_fontsize->setCurrentIndex(f_fontsize->findText(QString::number(QApplication::font()
-                                                                        //  .pointSize())));
-
-    // text foreground color
-
-    // QPixmap pix(16, 16);
-    // pix.fill(QApplication::palette().foreground().color());
-    // l_word_count->setIcon(pix);
-
-    // connect(l_word_count, SIGNAL(clicked()), this, SLOT(textFgColor()));
-
-    // text background color
-
-    //pix.fill(QApplication::palette().background().color());
-    //f_bgcolor->setIcon(pix);
-
-    //connect(f_bgcolor, SIGNAL(clicked()), this, SLOT(textBgColor()));
-
-    // images
 }
 
 
@@ -215,7 +229,12 @@ bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
 
             QCoreApplication::postEvent((QObject*)f_textedit, eve1);
             //qDebug("send key:0x%04x", eve1->key());
-        } else {
+        } else if ( key->key()==Qt::Key_Escape) {
+            if(!f_toolbar->isVisible()) {
+                f_toolbar->setVisible(true);
+            }
+        }
+        else {
             return QObject::eventFilter(obj, event);
         }
         //return true;
@@ -224,24 +243,12 @@ bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
     }
     return false;
 }
-void qtxtReader::textSource()
+void qtxtReader::slotQuit()
 {
     QApplication::quit();
-    /*
-    QDialog *dialog = new QDialog(this);
-    QPlainTextEdit *pte = new QPlainTextEdit(dialog);
-    pte->setPlainText( f_textedit->toHtml() );
-    QGridLayout *gl = new QGridLayout(dialog);
-    gl->addWidget(pte,0,0,1,1);
-    dialog->setWindowTitle(tr("Document source"));
-    dialog->setMinimumWidth (400);
-    dialog->setMinimumHeight(600);
-    dialog->exec();
-
-    f_textedit->setHtml(pte->toPlainText());
-
-    delete dialog;
-    */
+}
+void qtxtReader::fullscreen() {
+    f_toolbar->setVisible(false);
 }
 
 void qtxtReader::reloadByUtf8()
@@ -268,7 +275,23 @@ void qtxtReader::reloadByUtf8()
         this->setText(str);
     }
 }
-
+void qtxtReader::actFontSmall() {
+    //f_textedit->setFont
+    QFont font = QFont();
+    font.setPointSize(16);
+    f_textedit->setFont(font);
+    
+}
+void qtxtReader::actFontMedium() {
+    QFont font = QFont();
+    font.setPointSize(24);
+    f_textedit->setFont(font);
+}
+void qtxtReader::actFontBig() {
+    QFont font = QFont();
+    font.setPointSize(32);
+    f_textedit->setFont(font);
+}
 void qtxtReader::reloadByGBK()
 {
 
@@ -551,24 +574,7 @@ void qtxtReader::slotCursorPositionChanged()
 
 void qtxtReader::fontChanged(const QFont &f)
 {
-    // f_fontsize->setCurrentIndex(f_fontsize->findText(QString::number(f.pointSize())));
-
-    // if (f_textedit->textCursor().currentList())
-    // {
-    //     QTextListFormat lfmt = f_textedit->textCursor().currentList()->format();
-    //     if (lfmt.style() == QTextListFormat::ListDisc)
-    //     {
-    //     }
-    //     else if (lfmt.style() == QTextListFormat::ListDecimal)
-    //     {
-    //     }
-    //     else
-    //     {
-    //     }
-    // }
-    // else
-    // {
-    // }
+    
 }
 
 void qtxtReader::fgColorChanged(const QColor &c)

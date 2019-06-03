@@ -29,64 +29,98 @@ using namespace std;
 #define Q_OS_DARWIN
 //Q_IMPORT_PLUGIN(qwslinuxinputkbddriver);
 #define BUFFER_SIZE 4096
-const char* detect_charset(const char* fileName) {
-    FILE *fd = fopen(fileName,"r");
+const char *detect_charset(const char *fileName)
+{
+    FILE *fd = fopen(fileName, "r");
     csd_t csd = csd_open();
-    if (csd == (csd_t)-1) {
-        qDebug( "csd_open failed: %s", fileName);
+    if (csd == (csd_t)-1)
+    {
+        qDebug("csd_open failed: %s", fileName);
         return NULL;
     }
 
     int size;
     char buf[BUFFER_SIZE] = {0};
 
-    while ((size = fread(buf, 1, sizeof(buf), fd)) != 0) {
+    while ((size = fread(buf, 1, sizeof(buf), fd)) != 0)
+    {
         int result = csd_consider(csd, buf, size);
-        if (result < 0) {
-            qDebug( "csd_consider failed");
+        if (result < 0)
+        {
+            qDebug("csd_consider failed");
             return NULL;
-        } else if (result > 0) {
+        }
+        else if (result > 0)
+        {
             // Already have enough data
             break;
         }
     }
 
     const char *result = csd_close(csd);
-    if (result == NULL) {
-        qDebug( "Unknown character set");
+    if (result == NULL)
+    {
+        qDebug("Unknown character set");
         return NULL;
-    } else {
-        qDebug( "%s", result);
+    }
+    else
+    {
+        qDebug("%s", result);
         return result;
     }
 }
 int main(int argc, char **argv)
 {
-    
+
     QApplication app(argc, argv);
+#ifdef __APPLE__
+    app.setStyleSheet(
+        "QTextEdit"
+        "{"
+        "background-image: url(/Users/adouming/Development/rs97-txtReader/bin/background.png);"
+        "background2:rgb(253, 230, 224);"
+        "}");
+#else
+    app.setStyleSheet(
+        "QTextEdit"
+        "{"
+        "background-image: url(./background.png);"
+        "background2:rgb(253, 230, 224);"
+        "}");
+#endif
+
     qtxtReader *reader = new qtxtReader;
     //QGridLayout *gl = new QGridLayout(dialog);
     //gl->addWidget(rte,0,0,1,1);
+
+    reader->setWindowTitle(QObject::tr("rs97 text reader"));
+
+#ifdef __APPLE__
+    reader->setFixedSize(320, 240);
+#else
     QDesktopWidget desktop;
     QRect rec = desktop.geometry();
     int height = rec.height();
     int width = rec.width();
-
-    reader->setWindowTitle(QObject::tr("rs97 text reader"));
-    reader->setMinimumWidth (width);
+    reader->setMinimumWidth(width);
     reader->setMinimumHeight(height);
-    reader->setFixedSize(width,height);
-
+    reader->setFixedSize(width, height);
+#endif
 
     reader->show();
+#ifdef __APPLE__
+#else
+    QApplication::setOverrideCursor(Qt::BlankCursor); //隐藏鼠标
+#endif
 
-    if(argc>1) {
+    if (argc > 1)
+    {
         QString fileName = QString::fromUtf8(argv[1]);
         //QTextCodec *codec = QTextCodec::codecForName("utf-8");
         QFile file(argv[1]);
-        const char* code = detect_charset(argv[1]);
-        const wchar_t * encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
-        if(file.open(QIODevice::ReadOnly))
+        const char *code = detect_charset(argv[1]);
+        const wchar_t *encodedName = reinterpret_cast<const wchar_t *>(fileName.utf16());
+        if (file.open(QIODevice::ReadOnly))
         {
             reader->fileName = argv[1];
             reader->setWindowTitle(fileName);
@@ -94,11 +128,12 @@ int main(int argc, char **argv)
             stream.setCodec(code);
             reader->setCode(code);
             QString str = stream.readAll();
-            
-            qDebug( "open file : %ls", encodedName);
+
+            qDebug("open file : %ls", encodedName);
             reader->setText(str);
         }
-        else {
+        else
+        {
             QString str = QString("open file fail:%1 \n %2").arg(fileName, file.errorString());
             reader->setText(str);
         }
