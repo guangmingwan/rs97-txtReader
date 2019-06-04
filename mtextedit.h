@@ -13,6 +13,8 @@ class MTextEdit : public QTextEdit {
     void        dropImage(const QImage& image, const QString& format);
 
   protected:
+  
+    void onScrollChanged(int l, int t, int oldl, int oldt);
     bool        canInsertFromMimeData(const QMimeData *source) const;
     void        insertFromMimeData(const QMimeData *source);
     QMimeData  *createMimeDataFromSelection() const;

@@ -15,6 +15,7 @@
 
 #include "qtxtreader.h"
 #include <iostream>
+#include <QDir>
 #include <QFile>
 #include <QTextCodec>
 #include <QtPlugin>
@@ -72,20 +73,26 @@ const char *detect_charset(const char *fileName)
 int main(int argc, char **argv)
 {
 
+QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+//this->setFont(QFont("wenquanyi", 12, QFont::Bold));
     QApplication app(argc, argv);
 #ifdef __APPLE__
+    QString appPath = QDir::currentPath();
+    qDebug("appPath %s", qPrintable(appPath));
     app.setStyleSheet(
         "QTextEdit"
         "{"
-        "background-image: url(/Users/adouming/Development/rs97-txtReader/bin/background.png);"
-        "background2:rgb(253, 230, 224);"
+        "background-image: url(" + appPath + "/bin/background.png);"
+        //"background2:rgb(253, 230, 224);"
         "}");
 #else
     app.setStyleSheet(
         "QTextEdit"
         "{"
         "background-image: url(./background.png);"
-        "background2:rgb(253, 230, 224);"
+        //"background2:rgb(253, 230, 224);"
         "}");
 #endif
 

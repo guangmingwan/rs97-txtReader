@@ -51,41 +51,26 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
     void reloadByUtf8();
     void fullscreen();
     void reloadByGBK();
+    void actFontMini();
     void actFontSmall();
     void actFontMedium(); 
     void actFontBig(); 
-    void textBold();
-    void textUnderline();
-    void textStrikeout();
-    void textItalic();
-    void textSize(const QString &p);
-    void textLink(bool checked);
-    void textStyle(int index);
-    void textFgColor();
-    void textBgColor();
-    void listBullet(bool checked);
-    void listOrdered(bool checked);
-    void slotCurrentCharFormatChanged(const QTextCharFormat &format);
-    void slotCursorPositionChanged();
-    void slotClipboardDataChanged();
-    void increaseIndentation();
-    void decreaseIndentation();
-    void insertImage();
+   
     void slotQuit();
+    void setValue(int v);
 
   protected:
     //void keyPressEvent( QKeyEvent *k );
     //bool event(QEvent *event);
+    
     QString styleSheetFromFile(QString file, QString folderForUrl);
+    int scrollValue;
+    int fontSize;
+    QString textColor;
+    void readConfig();
+    void writeConfig();
     bool eventFilter(QObject* obj, QEvent* event);
-    void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
-    void fontChanged(const QFont &f);
-    void fgColorChanged(const QColor &c);
-    void bgColorChanged(const QColor &c);
-    void list(bool checked, QTextListFormat::Style style);
-    void indent(int delta);
-    void focusInEvent(QFocusEvent *event);
-
+    
     QStringList m_paragraphItems;
     int m_fontsize_h1;
     int m_fontsize_h2;

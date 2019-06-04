@@ -46,7 +46,7 @@
 
 QString qtxtReader::styleSheetFromFile(QString file, QString folderForUrl)
 {
-    qDebug("styleSheetFromFile %ls %ls", file.utf16(), folderForUrl.utf16());
+    qDebug("styleSheetFromFile %ls %ls", reinterpret_cast<const wchar_t *>(file.utf16()), reinterpret_cast<const wchar_t *>(folderForUrl.utf16()));
     QFile f(file);
     f.open(QFile::ReadOnly);
     QString styleSheet = QLatin1String(f.readAll());
@@ -54,7 +54,7 @@ QString qtxtReader::styleSheetFromFile(QString file, QString folderForUrl)
     styleSheet.replace("url(","url("+folderForUrl+"/");
     return styleSheet;
 }
-qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
+qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) , scrollValue(0), fontSize(12), textColor(QString("#000000"))
 {
     setupUi(this);
     #ifdef __APPLE__
@@ -65,10 +65,8 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     m_lastBlockList = 0;
     f_textedit->setTabStopWidth(40);
 
-    connect(f_textedit, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
-            this, SLOT(slotCurrentCharFormatChanged(QTextCharFormat)));
-    connect(f_textedit, SIGNAL(cursorPositionChanged()),
-            this, SLOT(slotCursorPositionChanged()));
+    connect(f_textedit->verticalScrollBar(),SIGNAL(valueChanged(int)),this, SLOT(setValue(int)));
+
     f_textedit->installEventFilter(this);
     
     f_textedit->verticalScrollBar()->setStyleSheet(
@@ -130,11 +128,7 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     m_fontsize_h3 = 14;
     m_fontsize_h4 = 12;
 
-    fontChanged(f_textedit->font());
-    bgColorChanged(f_textedit->textColor());
-
-    // paragraph formatting
-
+   
     m_paragraphItems << tr("Standard")
                      << tr("Heading 1")
                      << tr("Heading 2")
@@ -147,7 +141,7 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     // cut, copy & paste
 
 #ifndef QT_NO_CLIPBOARD
-    connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(slotClipboardDataChanged()));
+    //connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(slotClipboardDataChanged()));
 #endif
 
     // link
@@ -190,15 +184,19 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
 
     QMenu *actFont = menu->addMenu(QString::fromUtf8("字体"));
 
-    QAction *actFontSmall = new QAction(QString::fromUtf8("小"), this);
+    QAction *actFontMini = new QAction(QString::fromUtf8("微(12)"), this);
+    connect(actFontMini, SIGNAL(triggered()), this, SLOT(actFontMini()));
+
+    QAction *actFontSmall = new QAction(QString::fromUtf8("小(13)"), this);
     connect(actFontSmall, SIGNAL(triggered()), this, SLOT(actFontSmall()));
 
-    QAction *actFontMedium = new QAction(QString::fromUtf8("中"), this);
+    QAction *actFontMedium = new QAction(QString::fromUtf8("中(14)"), this);
     connect(actFontMedium, SIGNAL(triggered()), this, SLOT(actFontMedium()));
 
-    QAction *actFontBig = new QAction(QString::fromUtf8("大"), this);
+    QAction *actFontBig = new QAction(QString::fromUtf8("大(15)"), this);
     connect(actFontBig, SIGNAL(triggered()), this, SLOT(actFontBig()));
 
+    actFont->addAction(actFontMini);
     actFont->addAction(actFontSmall);
     actFont->addAction(actFontMedium);
     actFont->addAction(actFontBig);
@@ -215,7 +213,55 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent)
     QFontDatabase db;
 }
 
+void qtxtReader::setValue(int v) {
+    this->scrollValue = v;
+    //qDebug("setValue %d",v);
+}
+void qtxtReader::readConfig() {
+    QString appPath = QDir::currentPath();
+    QString iniFileName = appPath +"/qtxtreader.ini";
+    qDebug("read from ini: %s", qPrintable(iniFileName));
+    QSettings *settings = new QSettings(iniFileName, QSettings::IniFormat);
+    //向ini文件中写入内容,setValue函数的两个参数是键值对
+    //向ini文件的第一个节写入内容,ip节下的第一个参数
+    //QString scrollValue = settings->getValue(tr("/progress/")+ tr(this->fileName));
+    int fontsize = settings->value(tr("/skin/fontsize")).toInt();
+    QString textColor = settings->value("/skin/textcolor").toString();
+    
+    if(fontsize >0) {
+        this->fontSize = fontsize;
+        QFont font = QFont();
+        font.setPointSize(fontsize);
+        f_textedit->setFont(font);
+        qDebug("set fontsize: %d", fontsize);
+        
+    }
+    if(textColor.length() >0) {
+        this->textColor = textColor;
+        //f_textedit->setTextColor(QColor(255,255,255));
+        f_textedit->setStyleSheet( tr("QTextEdit{color:%1}").arg(textColor) );
 
+        qDebug("set textColor: %s", qPrintable(this->textColor));
+    }
+    this->scrollValue = settings->value(tr("/progress/")+ tr(this->fileName)).toInt();
+    qDebug("scrollValue: %d", this->scrollValue);
+    
+    
+}
+void qtxtReader::writeConfig() {
+    QString appPath = QDir::currentPath();
+    QString iniFileName = appPath +"/qtxtreader.ini";
+    qDebug("save to ini: %s", qPrintable(iniFileName));
+    QSettings *settings = new QSettings(iniFileName, QSettings::IniFormat);
+   //向ini文件中写入内容,setValue函数的两个参数是键值对
+   //向ini文件的第一个节写入内容,ip节下的第一个参数
+   //this->fontSize = 12;
+   settings->setValue(tr("/skin/fontsize"), this->fontSize);
+   settings->setValue(tr("/skin/textcolor"), QColor(this->textColor).name());
+   settings->setValue(tr("/progress/")+ tr(this->fileName), this->scrollValue);
+   settings->sync();
+
+}
 bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type()==QEvent::KeyPress) {
@@ -253,6 +299,7 @@ bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
 }
 void qtxtReader::slotQuit()
 {
+    this->writeConfig();
     QApplication::quit();
 }
 void qtxtReader::fullscreen() {
@@ -283,21 +330,33 @@ void qtxtReader::reloadByUtf8()
         this->setText(str);
     }
 }
+
+void qtxtReader::actFontMini() {
+    //f_textedit->setFont
+    QFont font = QFont();
+    font.setPointSize(12);
+    this->fontSize = 12;
+    f_textedit->setFont(font);
+    
+}
 void qtxtReader::actFontSmall() {
     //f_textedit->setFont
     QFont font = QFont();
-    font.setPointSize(16);
+    font.setPointSize(13);
+    this->fontSize = 13;
     f_textedit->setFont(font);
     
 }
 void qtxtReader::actFontMedium() {
     QFont font = QFont();
-    font.setPointSize(24);
+    font.setPointSize(14);
+    this->fontSize = 14;
     f_textedit->setFont(font);
 }
 void qtxtReader::actFontBig() {
     QFont font = QFont();
-    font.setPointSize(32);
+    font.setPointSize(15);
+    this->fontSize = 15;
     f_textedit->setFont(font);
 }
 void qtxtReader::reloadByGBK()
@@ -326,307 +385,15 @@ void qtxtReader::reloadByGBK()
     }
 }
 
-void qtxtReader::textBold()
-{
-    QTextCharFormat fmt;
-    //fmt.setFontWeight(f_bold->isChecked() ? QFont::Bold : QFont::Normal);
-    mergeFormatOnWordOrSelection(fmt);
-}
 
-void qtxtReader::focusInEvent(QFocusEvent *)
-{
-    f_textedit->setFocus(Qt::TabFocusReason);
-}
 
-void qtxtReader::textUnderline()
-{
-    QTextCharFormat fmt;
-    mergeFormatOnWordOrSelection(fmt);
-}
+  
 
-void qtxtReader::textItalic()
-{
-    QTextCharFormat fmt;
-
-    mergeFormatOnWordOrSelection(fmt);
-}
-
-void qtxtReader::textStrikeout()
-{
-    QTextCharFormat fmt;
-
-    mergeFormatOnWordOrSelection(fmt);
-}
-
-void qtxtReader::textSize(const QString &p)
-{
-    qreal pointSize = p.toFloat();
-    if (p.toFloat() > 0)
-    {
-        QTextCharFormat fmt;
-        fmt.setFontPointSize(pointSize);
-        mergeFormatOnWordOrSelection(fmt);
-    }
-}
-
-void qtxtReader::textLink(bool checked)
-{
-    bool unlink = false;
-    QTextCharFormat fmt;
-    if (checked)
-    {
-        QString url = f_textedit->currentCharFormat().anchorHref();
-        bool ok;
-        QString newUrl = QInputDialog::getText(this, tr("Create a link"),
-                                               tr("Link URL:"), QLineEdit::Normal,
-                                               url,
-                                               &ok);
-        if (ok)
-        {
-            fmt.setAnchor(true);
-            fmt.setAnchorHref(newUrl);
-            fmt.setForeground(QApplication::palette().color(QPalette::Link));
-            fmt.setFontUnderline(true);
-        }
-        else
-        {
-            unlink = true;
-        }
-    }
-    else
-    {
-        unlink = true;
-    }
-    if (unlink)
-    {
-        fmt.setAnchor(false);
-        fmt.setForeground(QApplication::palette().color(QPalette::Text));
-        fmt.setFontUnderline(false);
-    }
-    mergeFormatOnWordOrSelection(fmt);
-}
-
-void qtxtReader::textStyle(int index)
-{
-    QTextCursor cursor = f_textedit->textCursor();
-    cursor.beginEditBlock();
-
-    // standard
-    if (!cursor.hasSelection())
-    {
-        cursor.select(QTextCursor::BlockUnderCursor);
-    }
-    QTextCharFormat fmt;
-    cursor.setCharFormat(fmt);
-    f_textedit->setCurrentCharFormat(fmt);
-
-    if (index == ParagraphHeading1 || index == ParagraphHeading2 || index == ParagraphHeading3 || index == ParagraphHeading4)
-    {
-        if (index == ParagraphHeading1)
-        {
-            fmt.setFontPointSize(m_fontsize_h1);
-        }
-        if (index == ParagraphHeading2)
-        {
-            fmt.setFontPointSize(m_fontsize_h2);
-        }
-        if (index == ParagraphHeading3)
-        {
-            fmt.setFontPointSize(m_fontsize_h3);
-        }
-        if (index == ParagraphHeading4)
-        {
-            fmt.setFontPointSize(m_fontsize_h4);
-        }
-        if (index == ParagraphHeading2 || index == ParagraphHeading4)
-        {
-            fmt.setFontItalic(true);
-        }
-
-        fmt.setFontWeight(QFont::Bold);
-    }
-    if (index == ParagraphMonospace)
-    {
-        fmt = cursor.charFormat();
-        fmt.setFontFamily("Monospace");
-        fmt.setFontStyleHint(QFont::Monospace);
-        fmt.setFontFixedPitch(true);
-    }
-    cursor.setCharFormat(fmt);
-    f_textedit->setCurrentCharFormat(fmt);
-
-    cursor.endEditBlock();
-}
-
-void qtxtReader::textFgColor()
-{
-    QColor col = QColorDialog::getColor(f_textedit->textColor(), this);
-    QTextCursor cursor = f_textedit->textCursor();
-    if (!cursor.hasSelection())
-    {
-        cursor.select(QTextCursor::WordUnderCursor);
-    }
-    QTextCharFormat fmt = cursor.charFormat();
-    if (col.isValid())
-    {
-        fmt.setForeground(col);
-    }
-    else
-    {
-        fmt.clearForeground();
-    }
-    cursor.setCharFormat(fmt);
-    f_textedit->setCurrentCharFormat(fmt);
-    fgColorChanged(col);
-}
-
-void qtxtReader::textBgColor()
-{
-    QColor col = QColorDialog::getColor(f_textedit->textBackgroundColor(), this);
-    QTextCursor cursor = f_textedit->textCursor();
-    if (!cursor.hasSelection())
-    {
-        cursor.select(QTextCursor::WordUnderCursor);
-    }
-    QTextCharFormat fmt = cursor.charFormat();
-    if (col.isValid())
-    {
-        fmt.setBackground(col);
-    }
-    else
-    {
-        fmt.clearBackground();
-    }
-    cursor.setCharFormat(fmt);
-    f_textedit->setCurrentCharFormat(fmt);
-    bgColorChanged(col);
-}
-
-void qtxtReader::listBullet(bool checked)
-{
-    if (checked)
-    {
-    }
-    list(checked, QTextListFormat::ListDisc);
-}
-
-void qtxtReader::listOrdered(bool checked)
-{
-    if (checked)
-    {
-    }
-    list(checked, QTextListFormat::ListDecimal);
-}
-
-void qtxtReader::list(bool checked, QTextListFormat::Style style)
-{
-    QTextCursor cursor = f_textedit->textCursor();
-    cursor.beginEditBlock();
-    if (!checked)
-    {
-        QTextBlockFormat obfmt = cursor.blockFormat();
-        QTextBlockFormat bfmt;
-        bfmt.setIndent(obfmt.indent());
-        cursor.setBlockFormat(bfmt);
-    }
-    else
-    {
-        QTextListFormat listFmt;
-        if (cursor.currentList())
-        {
-            listFmt = cursor.currentList()->format();
-        }
-        listFmt.setStyle(style);
-        cursor.createList(listFmt);
-    }
-    cursor.endEditBlock();
-}
-
-void qtxtReader::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
-{
-    QTextCursor cursor = f_textedit->textCursor();
-    if (!cursor.hasSelection())
-    {
-        cursor.select(QTextCursor::WordUnderCursor);
-    }
-    cursor.mergeCharFormat(format);
-    f_textedit->mergeCurrentCharFormat(format);
-    f_textedit->setFocus(Qt::TabFocusReason);
-}
-
-void qtxtReader::slotCursorPositionChanged()
-{
-    QTextList *l = f_textedit->textCursor().currentList();
-    if (m_lastBlockList && (l == m_lastBlockList || (l != 0 && m_lastBlockList != 0 && l->format().style() == m_lastBlockList->format().style())))
-    {
-        return;
-    }
-    m_lastBlockList = l;
-    if (l)
-    {
-        QTextListFormat lfmt = l->format();
-        if (lfmt.style() == QTextListFormat::ListDisc)
-        {
-        }
-        else if (lfmt.style() == QTextListFormat::ListDecimal)
-        {
-        }
-        else
-        {
-        }
-    }
-    else
-    {
-    }
-}
-
-void qtxtReader::fontChanged(const QFont &f)
-{
+// void qtxtReader::fontChanged(const QFont &f)
+// {
     
-}
+// }
 
-void qtxtReader::fgColorChanged(const QColor &c)
-{
-    QPixmap pix(16, 16);
-    if (c.isValid())
-    {
-        pix.fill(c);
-    }
-    else
-    {
-        pix.fill(QApplication::palette().foreground().color());
-    }
-    // l_word_count->setIcon(pix);
-}
-
-void qtxtReader::bgColorChanged(const QColor &c)
-{
-    QPixmap pix(16, 16);
-    if (c.isValid())
-    {
-        pix.fill(c);
-    }
-    else
-    {
-        pix.fill(QApplication::palette().background().color());
-    }
-    //f_bgcolor->setIcon(pix);
-}
-
-void qtxtReader::slotCurrentCharFormatChanged(const QTextCharFormat &format)
-{
-    fontChanged(format.font());
-    bgColorChanged((format.background().isOpaque()) ? format.background().color() : QColor());
-    fgColorChanged((format.foreground().isOpaque()) ? format.foreground().color() : QColor());
-    //l_encode_name->setChecked(format.isAnchor());
-}
-
-void qtxtReader::slotClipboardDataChanged(){
-#ifndef QT_NO_CLIPBOARD
-//if (const QMimeData *md = QApplication::clipboard()->mimeData())
-
-#endif
-}
 
 QString qtxtReader::toHtml() const
 {
@@ -639,29 +406,7 @@ QString qtxtReader::toHtml() const
     return s;
 }
 
-void qtxtReader::increaseIndentation()
-{
-    indent(+1);
-}
 
-void qtxtReader::decreaseIndentation()
-{
-    indent(-1);
-}
-
-void qtxtReader::indent(int delta)
-{
-    QTextCursor cursor = f_textedit->textCursor();
-    cursor.beginEditBlock();
-    QTextBlockFormat bfmt = cursor.blockFormat();
-    int ind = bfmt.indent();
-    if (ind + delta >= 0)
-    {
-        bfmt.setIndent(ind + delta);
-    }
-    cursor.setBlockFormat(bfmt);
-    cursor.endEditBlock();
-}
 // Prints to the provided buffer a nice number of bytes (KB, MB, GB, etc)
 void pretty_bytes(char* buf, uint bytes)
 {
@@ -704,6 +449,14 @@ void qtxtReader::setText(const QString &text)
     pretty_bytes(cb,text.length());
     QString wc = QString::fromUtf8("字:") + QString::fromUtf8(cb);
     this->l_word_count->setText( wc );
+
+    int bc = f_textedit->document()->blockCount();
+    qDebug("block count: %d", bc);
+
+    this->readConfig();
+    if(this->scrollValue > 0) {
+        f_textedit->verticalScrollBar()->setValue(this->scrollValue);
+    }
 }
 void qtxtReader::setCode(const QString &text)
 {
@@ -716,17 +469,4 @@ void qtxtReader::setCode(const QString &text)
     {
         l_encode_name->setText(QString::fromUtf8("编码：") + text);
     }
-}
-
-void qtxtReader::insertImage()
-{
-    QSettings s;
-    QString attdir = s.value("general/filedialog-path").toString();
-    QString file = QFileDialog::getOpenFileName(this,
-                                                tr("Select an image"),
-                                                attdir,
-                                                tr("JPEG (*.jpg);; GIF (*.gif);; PNG (*.png);; BMP (*.bmp);; All (*)"));
-    QImage image = QImageReader(file).read();
-
-    f_textedit->dropImage(image, QFileInfo(file).suffix().toUpper().toLocal8Bit().data());
 }

@@ -6,7 +6,9 @@
 #include <QBuffer>
 #include <stdlib.h>
 
-
+void MTextEdit::onScrollChanged(int l, int t, int oldl, int oldt) {
+    qDebug("onScrollChanged %d,%d",l,t);
+}
 MTextEdit::MTextEdit(QWidget *parent) : QTextEdit(parent) {
 }
 
