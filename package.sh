@@ -13,8 +13,8 @@ cp -R lib ipkg/home/retrofw/apps/qtxtReader/lib
 
 cd ipkg
 
-tar -czf control.tar.gz control
-tar -czf data.tar.gz home
+tar -czf control.tar.gz control --owner=0 --group=0
+tar -czf data.tar.gz home --owner=0 --group=0
 ar rv qtxtReader.ipk control.tar.gz data.tar.gz debian-binary
 
 cd ..
