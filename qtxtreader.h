@@ -49,7 +49,11 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
     void setPlainText(const QString &text) { f_textedit->setPlainText(text); }
     void setHtml(const QString &text)      { f_textedit->setHtml(text); }
     void reloadByUtf8();
+    void fullscreen();
     void reloadByGBK();
+    void actFontSmall();
+    void actFontMedium(); 
+    void actFontBig(); 
     void textBold();
     void textUnderline();
     void textStrikeout();
@@ -67,11 +71,12 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
     void increaseIndentation();
     void decreaseIndentation();
     void insertImage();
-    void textSource();
+    void slotQuit();
 
   protected:
     //void keyPressEvent( QKeyEvent *k );
     //bool event(QEvent *event);
+    QString styleSheetFromFile(QString file, QString folderForUrl);
     bool eventFilter(QObject* obj, QEvent* event);
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
