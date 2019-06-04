@@ -1,6 +1,0 @@
-QMAKE_PRL_BUILD_DIR = /opt/buildroot-2018.02.11/output/build/qt-4.8.7/./src/3rdparty/webkit/Source/WebKit/qt
-QMAKE_PRO_INPUT = QtWebKit.pro
-QMAKE_PRL_TARGET = libQtWebKit.so...
-QMAKE_PRL_DEFINES = QT_SHARED
-QMAKE_PRL_CONFIG = lex yacc uic resources qt release incremental link_prl cross_compile shared def_files_disabled no_mocdepend release qt_no_framework silent cross_compile release embedded largefile exceptions_off dylib create_prl link_prl depend_includepath QTDIR_build building-libs depend_includepath embedded standalone_package depend_includepath include_webinspector production production embedded no_debug_info link_pkgconfig embedded production qt_install_headers qt warn_on depend_includepath qmake_cache target_qt hide_symbols create_pc create_libtool moc thread dll shared
-QMAKE_PRL_VERSION = ..
