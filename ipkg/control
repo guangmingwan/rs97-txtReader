@@ -6,5 +6,5 @@ Priority: optional
 Maintainer: netwan
 Architecture: mipsel
 Homepage: https://github.com/guangmingwan/rs97-txtReader
-Depends: qt4.8.7
+Depends:
 Source: https://github.com/guangmingwan/rs97-txtReader
