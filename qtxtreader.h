@@ -62,7 +62,7 @@ class qtxtReader : public QWidget, protected Ui::qtxtReader {
   protected:
     //void keyPressEvent( QKeyEvent *k );
     //bool event(QEvent *event);
-    
+    QMenu *menu;
     QString styleSheetFromFile(QString file, QString folderForUrl);
     int scrollValue;
     int fontSize;

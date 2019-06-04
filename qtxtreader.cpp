@@ -151,38 +151,40 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) , scrollValue(0), font
     QAction *actFullscreen = new QAction(QString::fromUtf8("全屏"), this);
     //actReloadByUTF8->setShortcut(QKeySequence("CTRL+M"));
     connect(actFullscreen, SIGNAL(triggered()), this, SLOT(fullscreen()));
-    f_textedit->addAction(actFullscreen);
+    //f_textedit->addAction(actFullscreen);
     
 
     QAction *actReloadByUTF8 = new QAction(QString::fromUtf8("强制使用UTF8编码"), this);
     //actReloadByUTF8->setShortcut(QKeySequence("CTRL+M"));
     connect(actReloadByUTF8, SIGNAL(triggered()), this, SLOT(reloadByUtf8()));
-    f_textedit->addAction(actReloadByUTF8);
+    //f_textedit->addAction(actReloadByUTF8);
 
     QAction *actReloadByGBK = new QAction(QString::fromUtf8("强制使用GBK编码"), this);
     connect(actReloadByGBK, SIGNAL(triggered()), this, SLOT(reloadByGBK()));
-    f_textedit->addAction(actReloadByGBK);
+    //f_textedit->addAction(actReloadByGBK);
 
-    QAction *textsource = new QAction(QString::fromUtf8("退出[START]"), this);
+    QAction *textsource = new QAction(QString::fromUtf8("退出"), this);
+    textsource->installEventFilter(this);
     //textsource->setShortcut(QKeySequence("CTRL+O"));
     connect(textsource, SIGNAL(triggered()), this, SLOT(slotQuit()));
-    f_textedit->addAction(textsource);
+    //f_textedit->addAction(textsource);
 
     f_textedit->setFocus();
 
     f_textedit->setFrameStyle(QFrame::NoFrame);
 
-    QMenu *menu = new QMenu(this);
-    //menu->installEventFilter(this);
+    menu = new QMenu(this);
+    menu->installEventFilter(this);
     menu->addAction(actFullscreen);
 
-    QMenu *actReload = menu->addMenu(QString::fromUtf8("编码"));
+    QMenu *menuReload = menu->addMenu(QString::fromUtf8("编码"));
+    menuReload->installEventFilter(this);
     
     //menu->addAction(actReloadByGBK);
-    actReload->addAction(actReloadByGBK);
-    actReload->addAction(actReloadByUTF8);
+    menuReload->addAction(actReloadByGBK);
+    menuReload->addAction(actReloadByUTF8);
 
-    QMenu *actFont = menu->addMenu(QString::fromUtf8("字体"));
+    QMenu *subMenu = menu->addMenu(QString::fromUtf8("字体"));
 
     QAction *actFontMini = new QAction(QString::fromUtf8("微(12)"), this);
     connect(actFontMini, SIGNAL(triggered()), this, SLOT(actFontMini()));
@@ -196,12 +198,12 @@ qtxtReader::qtxtReader(QWidget *parent) : QWidget(parent) , scrollValue(0), font
     QAction *actFontBig = new QAction(QString::fromUtf8("大(15)"), this);
     connect(actFontBig, SIGNAL(triggered()), this, SLOT(actFontBig()));
 
-    actFont->addAction(actFontMini);
-    actFont->addAction(actFontSmall);
-    actFont->addAction(actFontMedium);
-    actFont->addAction(actFontBig);
-
-    //menu->addAction(actReload);
+    subMenu->addAction(actFontMini);
+    subMenu->addAction(actFontSmall);
+    subMenu->addAction(actFontMedium);
+    subMenu->addAction(actFontBig);
+    subMenu->installEventFilter(this);
+    //menu->addAction(menuReload);
     menu->addAction(textsource);
     f_menu->setMenu(menu);
     f_menu->setPopupMode(QToolButton::InstantPopup);
@@ -225,26 +227,47 @@ void qtxtReader::readConfig() {
     //向ini文件中写入内容,setValue函数的两个参数是键值对
     //向ini文件的第一个节写入内容,ip节下的第一个参数
     //QString scrollValue = settings->getValue(tr("/progress/")+ tr(this->fileName));
-    int fontsize = settings->value(tr("/skin/fontsize")).toInt();
-    QString textColor = settings->value("/skin/textcolor").toString();
     
-    if(fontsize >0) {
-        this->fontSize = fontsize;
-        QFont font = QFont();
-        font.setPointSize(fontsize);
-        f_textedit->setFont(font);
-        qDebug("set fontsize: %d", fontsize);
-        
-    }
+    QString textColor = settings->value("/skin/textcolor").toString();
+    int scrollValuel = settings->value(tr("/book_progress/")+ tr(this->fileName)).toInt();
+    
+    int book_fontsize = settings->value(tr("/book_fontsize/")+ tr(this->fileName)).toInt();
+
     if(textColor.length() >0) {
         this->textColor = textColor;
-        //f_textedit->setTextColor(QColor(255,255,255));
         f_textedit->setStyleSheet( tr("QTextEdit{color:%1}").arg(textColor) );
-
-        qDebug("set textColor: %s", qPrintable(this->textColor));
+        qDebug("read textColor: %s", qPrintable(this->textColor));
     }
-    this->scrollValue = settings->value(tr("/progress/")+ tr(this->fileName)).toInt();
-    qDebug("scrollValue: %d", this->scrollValue);
+    
+    if(book_fontsize > 0) {
+        this->fontSize = book_fontsize;
+        QFont font = QFont();
+        font.setPointSize(book_fontsize);
+        f_textedit->setFont(font);
+        qDebug("read book fontsize: %d", book_fontsize);
+    }
+    else {
+        int fontsize = settings->value(tr("/skin/fontsize")).toInt();
+        if(fontsize >0) {
+            this->fontSize = fontsize;
+            QFont font2 = QFont();
+            font2.setPointSize(fontsize);
+            f_textedit->setFont(font2);
+            qDebug("read fontsize: %d", fontsize);
+            
+        }
+    }
+    
+    if(scrollValuel > 0) {
+        qDebug("read scrollValue: %d", scrollValuel);
+        this->scrollValue  = scrollValuel;
+        f_textedit->verticalScrollBar()->setValue(this->scrollValue);
+
+        
+        
+    }
+    
+    
     
     
 }
@@ -252,13 +275,17 @@ void qtxtReader::writeConfig() {
     QString appPath = QDir::currentPath();
     QString iniFileName = appPath +"/qtxtreader.ini";
     qDebug("save to ini: %s", qPrintable(iniFileName));
+    qDebug("set fontsize: %d", this->fontSize);
+    qDebug("set textColor: %s", qPrintable(this->textColor));
+    qDebug("set scrollValue: %d", this->scrollValue);
     QSettings *settings = new QSettings(iniFileName, QSettings::IniFormat);
    //向ini文件中写入内容,setValue函数的两个参数是键值对
    //向ini文件的第一个节写入内容,ip节下的第一个参数
    //this->fontSize = 12;
    settings->setValue(tr("/skin/fontsize"), this->fontSize);
-   settings->setValue(tr("/skin/textcolor"), QColor(this->textColor).name());
-   settings->setValue(tr("/progress/")+ tr(this->fileName), this->scrollValue);
+   settings->setValue(tr("/skin/textcolor"), this->textColor);
+   settings->setValue(tr("/book_progress/")+ tr(this->fileName), this->scrollValue);
+   settings->setValue(tr("/book_fontsize/")+ tr(this->fileName), this->fontSize);
    settings->sync();
 
 }
@@ -267,16 +294,19 @@ bool qtxtReader::eventFilter(QObject* obj, QEvent* event)
     if (event->type()==QEvent::KeyPress) {
         QKeyEvent* key = static_cast<QKeyEvent*>(event);
         //qDebug("qtxtReader::eventFilter : key:0x%04x", key->key());
-        if( key->key() == Qt::Key_Space) {
-            QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier,QString());
-
-            QCoreApplication::postEvent((QObject*)this, eve1);
+        if(obj->metaObject()->className() == QString("QMenu")) { //a button ,when menu focus
+            if( key->key() == Qt::Key_Control) {
+                QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier,QString());
+                QCoreApplication::postEvent((QObject*)obj, eve1);
+            }
+            return false;
+            
         }
-        else if( key->key()==Qt::Key_Tab || key->key()==Qt::Key_Left) {
+        if( key->key()==Qt::Key_Tab || key->key()==Qt::Key_Left) {
             //QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_PageUp, Qt::NoModifier, QString());
             QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_PageUp,Qt::NoModifier,QString());
             QCoreApplication::postEvent((QObject*)f_textedit, eve1);
-            //qDebug("send key:0x%04x", eve1->key());
+            
         }
         else if ( key->key()==Qt::Key_Backspace || key->key()==Qt::Key_Right ) {
             QKeyEvent * eve1 = new QKeyEvent (QEvent::KeyPress,Qt::Key_PageDown,Qt::NoModifier,QString());
@@ -454,9 +484,7 @@ void qtxtReader::setText(const QString &text)
     qDebug("block count: %d", bc);
 
     this->readConfig();
-    if(this->scrollValue > 0) {
-        f_textedit->verticalScrollBar()->setValue(this->scrollValue);
-    }
+    
 }
 void qtxtReader::setCode(const QString &text)
 {
