@@ -1,0 +1,10 @@
+Package: qtxtReader
+Version: 2019060i4
+Description: qtxtReader
+Section: media
+Priority: optional
+Maintainer: netwan
+Architecture: mipsel
+Homepage: https://github.com/guangmingwan/rs97-txtReader
+Depends: qt4.8.7
+Source: https://github.com/guangmingwan/rs97-txtReader

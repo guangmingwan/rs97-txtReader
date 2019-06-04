@@ -1,0 +1,4 @@
+title=阅读器
+description=text reader for rs97
+exec=/home/retrofw/apps/qtxtReader/bin/qtxtReader.dge
+clock=600

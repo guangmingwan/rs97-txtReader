@@ -1,0 +1,12 @@
+#!/bin/sh
+bin_dirname=`dirname $0`
+app_dirname=`dirname $bin_dirname`
+lib_dirname="$app_dirname/lib"
+cd "$bin_dirname"
+export QWS_DISPLAY="LinuxFb:mmWidth120:mmHeight77:0"
+export QT_QWS_FONTDIR="$lib_dirname/fonts"
+export LD_LIBRARY_PATH="$lib_dirname"
+#export QWS_MOUSE_PROTO=tslib:/dev/input/event1
+export QWS_KEYBOARD="LinuxInput:/dev/input/event0"
+echo "open file: [$1]"
+./qtxtReader "$1" -qws
