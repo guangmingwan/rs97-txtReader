@@ -2,4 +2,7 @@ title=电子书阅读
 icon=skin:icons/ebook.png
 description=text reader for rs97
 exec=/home/retrofw/apps/qtxtReader/bin/qtxtReader.dge
+selectorfilter=.txt,.ini,.inf,.xml,.js,.html,.htm,.dge,.sh,.lnk
+selectordir=/media/
+selectorbrowser=true
 clock=600
